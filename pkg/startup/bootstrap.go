@@ -14,7 +14,6 @@ import (
 	"syscall"
 
 	"github.com/edgexfoundry/device-sdk-go"
-	dsModels "github.com/edgexfoundry/device-sdk-go/pkg/models"
 	flags "github.com/jessevdk/go-flags"
 )
 
@@ -28,7 +27,7 @@ type Options struct {
 var opts Options
 
 // Bootstrap starts the Device Service in a default way
-func Bootstrap(serviceName string, serviceVersion string, driver dsModels.ProtocolDriver) {
+func Bootstrap(serviceName string, serviceVersion string, driver interface{}) {
 	//flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError) // clean up existing flag defined by other code
 	_, err := flags.Parse(&opts)
 	if err != nil {
@@ -42,7 +41,7 @@ func Bootstrap(serviceName string, serviceVersion string, driver dsModels.Protoc
 	}
 }
 
-func startService(serviceName string, serviceVersion string, driver dsModels.ProtocolDriver) error {
+func startService(serviceName string, serviceVersion string, driver interface{}) error {
 	s, err := device.NewService(serviceName, serviceVersion, opts.ConfProfile, opts.ConfDir, opts.UseRegistry, driver)
 	if err != nil {
 		return err

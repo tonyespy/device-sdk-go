@@ -1,7 +1,7 @@
 // -*- Mode: Go; indent-tabs-mode: t -*-
 //
 // Copyright (C) 2018 Canonical Ltd
-// Copyright (C) 2018-2019 IOTech Ltd
+// Copyright (C) 2018-2020 IOTech Ltd
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -191,4 +191,22 @@ func (s *SimpleDriver) UpdateDevice(deviceName string, protocols map[string]cont
 func (s *SimpleDriver) RemoveDevice(deviceName string, protocols map[string]contract.ProtocolProperties) error {
 	s.lc.Debug(fmt.Sprintf("Device %s is removed", deviceName))
 	return nil
+}
+
+// Discover triggers protocol specific device discovery, which is
+// a synchronous operation which returns a list of new devices
+func (s *SimpleDriver) Discover(devices chan<- []dsModels.DiscoveredDevice) {
+	proto := make(map[string]contract.ProtocolProperties)
+	proto["address"] = map[string]string{"HTTP": "10.0.0.1", "MAC": "00-05-1B-A1-99-99"}
+
+	device := dsModels.DiscoveredDevice{
+		Name:        "new-device01",
+		Protocols:   proto,
+		Description: "found by discovery",
+		Labels:      nil,
+	}
+	res := []dsModels.DiscoveredDevice{device}
+
+	time.Sleep(10 * time.Second)
+	devices <- res
 }

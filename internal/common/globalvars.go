@@ -24,6 +24,7 @@ var (
 	OverwriteConfig        bool
 	ServiceLocked          bool
 	Driver                 dsModels.ProtocolDriver
+	Discovery              dsModels.ProtocolDiscovery
 	EventClient            coredata.EventClient
 	AddressableClient      metadata.AddressableClient
 	DeviceClient           metadata.DeviceClient

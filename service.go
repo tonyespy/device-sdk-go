@@ -19,6 +19,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/edgexfoundry/device-sdk-go/internal/autodiscovery"
 	"github.com/edgexfoundry/device-sdk-go/internal/autoevent"
 	"github.com/edgexfoundry/device-sdk-go/internal/cache"
 	"github.com/edgexfoundry/device-sdk-go/internal/clients"
@@ -115,10 +116,15 @@ func (s *Service) Start(errChan chan error) (err error) {
 
 	err = provision.LoadDevices(common.CurrentConfig.DeviceList)
 	if err != nil {
-		return fmt.Errorf("Failed to create the pre-defined Devices")
+		return fmt.Errorf("failed to create the pre-defined Devices")
 	}
 
 	autoevent.GetManager().StartAutoEvents()
+	if common.CurrentConfig.Device.Discovery.Enabled &&
+		common.CurrentConfig.Device.Discovery.Interval > 0 &&
+		common.Discovery != nil {
+		go autodiscovery.Run()
+	}
 	http.TimeoutHandler(nil, time.Millisecond*time.Duration(s.svcInfo.Timeout), "Request timed out")
 
 	common.LoggingClient.Info("Service started in: " + time.Since(s.startTime).String())
@@ -248,7 +254,7 @@ func SetOverwriteConfig(oc bool) {
 // version number, config profile, config directory, whether to use registry, and Driver, which cannot be nil.
 // Note - this function is a singleton, if called more than once,
 // it will always return an error.
-func NewService(serviceName string, serviceVersion string, confProfile string, confDir string, useRegistry string, proto dsModels.ProtocolDriver) (*Service, error) {
+func NewService(serviceName string, serviceVersion string, confProfile string, confDir string, useRegistry string, proto interface{}) (*Service, error) {
 	startTime := time.Now()
 	if svc != nil {
 		err := fmt.Errorf("NewService: service already exists!\n")
@@ -282,7 +288,14 @@ func NewService(serviceName string, serviceVersion string, confProfile string, c
 	svc = &Service{}
 	svc.startTime = startTime
 	svc.svcInfo = &config.Service
-	common.Driver = proto
+	if casted, ok := proto.(dsModels.ProtocolDriver); ok {
+		common.Driver = casted
+	}
+	if casted, ok := proto.(dsModels.ProtocolDiscovery); ok {
+		common.Discovery = casted
+	} else {
+		common.Discovery = nil
+	}
 
 	return svc, nil
 }

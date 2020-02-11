@@ -50,6 +50,9 @@ FailWaitTime = 10
   RemoveCmdArgs = ""
   ProfilesDir = "./res"
   UpdateLastConnected = false
+  [Device.Discovery]
+    Enabled = false
+    Interval = 0
 
 [Logging]
 EnableRemote = false

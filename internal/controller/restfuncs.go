@@ -26,7 +26,7 @@ import (
 const (
 	statusOK             string = "OK"
 	statusNotImplemented string = "Discovery not implemented"
-	statusUnavailable    string = "Discovery Disabled by configuration"
+	statusUnavailable    string = "Discovery disabled by configuration"
 	statusLocked         string = "OperatingState disabled"
 )
 

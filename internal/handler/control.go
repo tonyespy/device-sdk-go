@@ -37,6 +37,7 @@ func DiscoveryHandler(w http.ResponseWriter) {
 	if id == "" {
 		id = uuid.New().String()
 	}
+
 	if w != nil {
 		msg := fmt.Sprintf("Discovery triggered or already running, id = %s", id)
 		w.WriteHeader(http.StatusAccepted) //status=202
@@ -44,7 +45,7 @@ func DiscoveryHandler(w http.ResponseWriter) {
 	}
 
 	if !atomic.CompareAndSwapUint32(&locker, 0, 1) {
-		common.LoggingClient.Debug(fmt.Sprintf("returned. discovery process is running"))
+		common.LoggingClient.Info(fmt.Sprintf("Discovery request returned. discovery process is running"))
 		return
 	}
 	common.LoggingClient.Info(fmt.Sprintf("service %s discovery triggered", common.ServiceName))
@@ -60,7 +61,7 @@ func filterAndAddition(ctx context.Context, deviceCh <-chan []models.DiscoveredD
 	devices := <-deviceCh
 	// Notify the DS main thread to accept discovery request
 	atomic.StoreUint32(&locker, 0)
-	id = uuid.New().String()
+	id = ""
 
 	for _, d := range devices {
 		for _, pw := range pws {
@@ -71,7 +72,7 @@ func filterAndAddition(ctx context.Context, deviceCh <-chan []models.DiscoveredD
 				break
 			}
 
-			common.LoggingClient.Info(fmt.Sprintf("Adding newly found device %s into edgex", d.Name))
+			common.LoggingClient.Info(fmt.Sprintf("Updating discovered device %s to Edgex", d.Name))
 			millis := time.Now().UnixNano() / int64(time.Millisecond)
 			device := &contract.Device{
 				Name:           d.Name,
@@ -87,7 +88,7 @@ func filterAndAddition(ctx context.Context, deviceCh <-chan []models.DiscoveredD
 			device.Description = d.Description
 			_, err := common.DeviceClient.Add(device, ctx)
 			if err != nil {
-				common.LoggingClient.Error(fmt.Sprintf("Added discovered device %s failed: %v", device.Name, err))
+				common.LoggingClient.Error(fmt.Sprintf("Created discovered device %s failed: %v", device.Name, err))
 			}
 		}
 	}
@@ -97,14 +98,16 @@ func filterAndAddition(ctx context.Context, deviceCh <-chan []models.DiscoveredD
 func whitelistPass(d models.DiscoveredDevice, pw contract.ProvisionWatcher) bool {
 	// a candidate device should pass all identifiers
 	for name, regex := range pw.Identifiers {
-		// ignore the protocolproperties name
+		// ignore the device protocol properties name
 		for _, protocol := range d.Protocols {
 			if value, ok := protocol[name]; ok {
 				matched, err := regexp.MatchString(regex, value)
 				if !matched || err != nil {
+					common.LoggingClient.Debug(fmt.Sprintf("Device %s's %s value %s did not match PW identifier: %s", d.Name, name, value, regex))
 					return false
 				}
 			} else {
+				common.LoggingClient.Debug(fmt.Sprintf("Identifier field: %s, did not exist in discovered device %s", name, d.Name))
 				return false
 			}
 		}
@@ -115,11 +118,12 @@ func whitelistPass(d models.DiscoveredDevice, pw contract.ProvisionWatcher) bool
 func blacklistPass(d models.DiscoveredDevice, pw contract.ProvisionWatcher) bool {
 	// a candidate should match none of the blocking identifiers
 	for name, blacklist := range pw.BlockingIdentifiers {
-		// ignore the protocolproperties name
+		// ignore the device protocol properties name
 		for _, protocol := range d.Protocols {
 			if value, ok := protocol[name]; ok {
 				for _, v := range blacklist {
 					if value == v {
+						common.LoggingClient.Debug(fmt.Sprintf("Discovered Device %s's %s should not be %s", d.Name, name, value))
 						return false
 					}
 				}

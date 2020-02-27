@@ -197,15 +197,26 @@ func (s *SimpleDriver) RemoveDevice(deviceName string, protocols map[string]cont
 // a synchronous operation which returns a list of new devices
 func (s *SimpleDriver) Discover(devices chan<- []dsModels.DiscoveredDevice) {
 	proto := make(map[string]contract.ProtocolProperties)
-	proto["address"] = map[string]string{"HTTP": "10.0.0.1", "MAC": "00-05-1B-A1-99-99"}
+	proto["other"] = map[string]string{"Address": "simple02", "Port": "301"}
 
-	device := dsModels.DiscoveredDevice{
-		Name:        "new-device01",
+	device2 := dsModels.DiscoveredDevice{
+		Name:        "Simple-Device02",
 		Protocols:   proto,
 		Description: "found by discovery",
-		Labels:      nil,
+		Labels:      []string{"auto-discovery"},
 	}
-	res := []dsModels.DiscoveredDevice{device}
+
+	proto = make(map[string]contract.ProtocolProperties)
+	proto["other"] = map[string]string{"Address": "simple03", "Port": "399"}
+
+	device3 := dsModels.DiscoveredDevice{
+		Name:        "Simple-Device03",
+		Protocols:   proto,
+		Description: "found by discovery",
+		Labels:      []string{"auto-discovery"},
+	}
+
+	res := []dsModels.DiscoveredDevice{device2, device3}
 
 	time.Sleep(10 * time.Second)
 	devices <- res

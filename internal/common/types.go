@@ -94,11 +94,11 @@ type DeviceInfo struct {
 	Discovery DiscoveryInfo
 }
 
-// DiscoveryInfo is a struct which contains configuration if device auto discovery.
+// DiscoveryInfo is a struct which contains configuration of device auto discovery.
 type DiscoveryInfo struct {
-	// Enabled determine whether the Device Service enable dynamic device discovery.
+	// Enabled controls whether or not device discovery is enabled.
 	Enabled bool
-	// Interval indicates how often the discovery process will be triggered.
+	// Interval indicates how often the discovery process will be triggered in seconds.
 	Interval int64
 }
 

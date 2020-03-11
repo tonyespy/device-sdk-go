@@ -44,6 +44,9 @@ func DiscoveryHandler(w http.ResponseWriter) {
 		_, _ = io.WriteString(w, msg)
 	}
 
+	// locker is used to prevent duplicate call of protocol specific device discovery
+	// locker would be released once the DS main thread received the candidate devices
+	// found by discovery
 	if !atomic.CompareAndSwapUint32(&locker, 0, 1) {
 		common.LoggingClient.Info(fmt.Sprintf("Discovery request returned. discovery process is running"))
 		return
@@ -69,6 +72,11 @@ func filterAndAddition(ctx context.Context, deviceCh <-chan []models.DiscoveredD
 				break
 			}
 			if !blacklistPass(d, pw) {
+				break
+			}
+
+			if _, ok := cache.Devices().ForName(d.Name); ok {
+				common.LoggingClient.Info(fmt.Sprintf("Candidate discovered device %s already existed", d.Name))
 				break
 			}
 

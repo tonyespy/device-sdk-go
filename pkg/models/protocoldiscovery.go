@@ -13,12 +13,9 @@ import contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 // by device services that support dynamic device discovery.
 type ProtocolDiscovery interface {
 	// Discover triggers protocol specific device discovery, which is
-	// a synchronous operation which returns a list of new devices
-	// which may be added to the device service based on service
-	// config. This function may also optionally trigger sensor
-	// discovery, which could result in dynamic device profile creation.
-	//
-	// TODO: add models.ScanList (or define locally) for devices
+	// an asynchronous operation, returns a list of new devices
+	// that may be added to the device service based on a set of acceptance
+	// criteria (i.e. Provision Watchers).
 	Discover(devices chan<- []DiscoveredDevice)
 }
 

@@ -288,18 +288,17 @@ func NewService(serviceName string, serviceVersion string, confProfile string, c
 	svc = &Service{}
 	svc.startTime = startTime
 	svc.svcInfo = &config.Service
-	if casted, ok := proto.(dsModels.ProtocolDriver); ok {
-		common.Driver = casted
+	if driver, ok := proto.(dsModels.ProtocolDriver); ok {
+		common.Driver = driver
 	} else {
 		err := fmt.Errorf("ProtocolDriver must be implemented\n")
 		return nil, err
 	}
 
-	if casted, ok := proto.(dsModels.ProtocolDiscovery); ok {
-		common.Discovery = casted
+	if discovery, ok := proto.(dsModels.ProtocolDiscovery); ok {
+		common.Discovery = discovery
 	} else {
 		common.Discovery = nil
-		common.LoggingClient.Info("ProtocolDiscovery is not implemented")
 	}
 
 	return svc, nil

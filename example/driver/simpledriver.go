@@ -193,8 +193,8 @@ func (s *SimpleDriver) RemoveDevice(deviceName string, protocols map[string]cont
 	return nil
 }
 
-// Discover triggers protocol specific device discovery, which is
-// a synchronous operation which returns a list of new devices
+// Discover triggers protocol specific device discovery, which is an asynchronous operation.
+// Devices found as part of this discovery operation are written to the channel devices.
 func (s *SimpleDriver) Discover(devices chan<- []dsModels.DiscoveredDevice) {
 	proto := make(map[string]contract.ProtocolProperties)
 	proto["other"] = map[string]string{"Address": "simple02", "Port": "301"}

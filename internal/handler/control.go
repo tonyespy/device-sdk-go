@@ -13,7 +13,7 @@ import (
 	"io"
 	"net/http"
 	"regexp"
-	"sync/atomic"
+	"sync"
 	"time"
 
 	"github.com/edgexfoundry/device-sdk-go/internal/cache"
@@ -25,7 +25,8 @@ import (
 
 var (
 	id     string
-	locker uint32
+	mtx    sync.Mutex
+	busy   bool
 )
 
 func TransformHandler(requestMap map[string]string) (map[string]string, common.AppError) {
@@ -34,6 +35,8 @@ func TransformHandler(requestMap map[string]string) (map[string]string, common.A
 }
 
 func DiscoveryHandler(w http.ResponseWriter) {
+	// TODO: since var is set in two goroutines, it should be guarded
+	// with the mutex as well...
 	if id == "" {
 		id = uuid.New().String()
 	}
@@ -44,13 +47,14 @@ func DiscoveryHandler(w http.ResponseWriter) {
 		_, _ = io.WriteString(w, msg)
 	}
 
-	// locker is used to prevent duplicate call of protocol specific device discovery
-	// locker would be released once the DS main thread received the candidate devices
-	// found by discovery
-	if !atomic.CompareAndSwapUint32(&locker, 0, 1) {
+	defer mtx.Unlock()
+	mtx.Lock()
+
+	if busy {
 		common.LoggingClient.Info(fmt.Sprintf("Discovery request returned. discovery process is running"))
 		return
 	}
+	busy = true
 	common.LoggingClient.Info(fmt.Sprintf("service %s discovery triggered", common.ServiceName))
 
 	ctx := context.WithValue(context.Background(), common.CorrelationHeader, id)
@@ -62,8 +66,11 @@ func DiscoveryHandler(w http.ResponseWriter) {
 func filterAndAddition(ctx context.Context, deviceCh <-chan []models.DiscoveredDevice) {
 	pws := cache.ProvisionWatchers().All()
 	devices := <-deviceCh
-	// Notify the DS main thread to accept discovery request
-	atomic.StoreUint32(&locker, 0)
+
+	mtx.Lock()
+	busy = false
+	mtx.Unlock()
+
 	id = ""
 
 	for _, d := range devices {

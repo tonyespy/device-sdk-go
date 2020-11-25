@@ -7,13 +7,6 @@
 
 package cache
 
-import (
-	"fmt"
-	"sync"
-
-	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
-)
-
 var (
 	dc *deviceCache
 )
@@ -29,7 +22,7 @@ type DeviceCache interface {
 	UpdateAdminState(id string, state contract.AdminState) error
 }
 
-type deviceCache struct {
+TYPE DEVICECACHE struct {
 	dMap    map[string]*contract.Device // key is Device name
 	nameMap map[string]string           // key is id, and value is Device name
 	mutex   sync.Mutex
@@ -47,25 +40,8 @@ func (d *deviceCache) ForName(name string) (contract.Device, bool) {
 	}
 }
 
-// ForId returns a device with the given device id.
-func (d *deviceCache) ForId(id string) (contract.Device, bool) {
-	d.mutex.Lock()
-	defer d.mutex.Unlock()
-
-	name, ok := d.nameMap[id]
-	if !ok {
-		return contract.Device{}, ok
-	}
-
-	if device, ok := d.dMap[name]; ok {
-		return *device, ok
-	} else {
-		return contract.Device{}, ok
-	}
-}
-
 // All() returns the current list of devices in the cache.
-func (d *deviceCache) All() []contract.Device {
+FUNC (d *deviceCache) All() []contract.Device {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
 

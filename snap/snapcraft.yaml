@@ -9,11 +9,6 @@ version: "replace-me"
 # built from
 version-script: |
   echo $(cat VERSION)-$(date +%Y%m%d)+$(git rev-parse --short HEAD)
-summary: Demonstrate the Device SDK go in EdgeX using device-simple
-title: EdgeX Simple Device Service
-description: |
-  device-simple is an example EdgeX Device Service built using the 
-  device-sdk-go.
 
 # What architectures to build the snap on
 architectures:

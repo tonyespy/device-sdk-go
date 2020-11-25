@@ -4,12 +4,6 @@
 
 This repository is a set of Go packages that can be used to build Go-based [device services](https://docs.edgexfoundry.org/1.2/microservices/device/Ch-DeviceServices/) for use within the EdgeX framework.
 
-## Usage
-
-Developers can make their own device service by implementing the [`ProtocolDriver`](https://github.com/edgexfoundry/device-sdk-go/blob/master/pkg/models/protocoldriver.go) interface for their desired IoT protocol, and the `main` function to start the Device Service. To implement the `main` function, the [`startup`](https://github.com/edgexfoundry/device-sdk-go/tree/master/pkg/startup) package can be optionally leveraged, or developers can write customized bootstrap code by themselves.
-
-Please see the provided [simple device service](https://github.com/edgexfoundry/device-sdk-go/tree/master/example) as an example, included in this repository.
-
 ## Command Line Options
 
 The following command line options are available
@@ -40,13 +34,13 @@ The following command line options are available
         URL Format: {type}.{protocol}://{host}:{port} ex: consul.http://localhost:8500
 ```
 
-## Float value encoding
+## Float Value Encoding
 
 In EdgeX, float values have two kinds of encoding, [Base64](#base64), and [scientific notation (`eNotation`)](#scientific-notation-e-notation).
 
 > When EdgeX is given (or returns) a float32 or float64 value as a string, the format of the string is by default a base64 encoded little-endian of the float32 or float64 value, but the `floatEncoding` attribute relating to the value may instead specify `eNotation` in which case the representation is a decimal with exponent (eg `1.234e-5`)
 
-The above quote is from the official EdgeX device service requirements document, viewable [on Google Docs here](https://docs.google.com/document/d/1aMIQ0kb46VE5eeCpDlaTg8PP29-DBSBTlgeWrv6LuYk), under the "Device readings" section.
+The  quote is from the official EdgeX device service requirements document, viewable [on Google Docs here](https://docs.google.com/document/d/1aMIQ0kb46VE5eeCpDlaTg8PP29-DBSBTlgeWrv6LuYk), under the "Device readings" section.
 
 ### base64
 

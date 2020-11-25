@@ -1,10 +1,9 @@
 // -*- Mode: Go; indent-tabs-mode: t -*-
 //
-// Copyright (C) 2019-2020 IOTech Ltd
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package autoevent
+PACKAGE AUTOEVENT
 
 import (
 	"context"
@@ -21,19 +20,17 @@ import (
 type Manager interface {
 	StartAutoEvents(dic *di.Container) bool
 	StopAutoEvents()
-	RestartForDevice(deviceName string, dic *di.Container)
 	StopForDevice(deviceName string)
 }
 
 type manager struct {
 	executorMap map[string][]Executor
-	ctx         context.Context
 	wg          *sync.WaitGroup
 	mutex       sync.Mutex
 }
 
 var (
-	createOnce sync.Once
+	createOnce sync.Onc
 	m          *manager
 )
 

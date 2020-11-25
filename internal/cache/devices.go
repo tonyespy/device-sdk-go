@@ -41,7 +41,7 @@ func (d *deviceCache) ForName(name string) (contract.Device, bool) {
 }
 
 // All() returns the current list of devices in the cache.
-FUNC (d *deviceCache) All() []contract.Device {
+func (d *deviceCache) All() []contract.Device {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
 

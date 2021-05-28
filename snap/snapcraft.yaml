@@ -27,10 +27,10 @@ confinement: strict
 apps:
   device-simple:
     # `adapter` specifies what kind of environment variables need to be setup
-    # for the app, since our app is a statically compiled go app, we don't 
-    # need any of the env vars, but if this was a c program or used cgo, we 
-    # would need adapter: full
-    adapter: none
+    # for the app; since device services now link to libzmq by default (i.e.
+    # this service uses cgo), we need to ensure that all of the standard
+    # enviornment variables are provided to this service by using 'full'.
+    adapter: full
     command: bin/device-simple --registry $CONFIG_PRO_ARG $CONF_ARG
     # Since we can't include the colon ':' characters in the command above,
     # we need to specify the consul address in an env var like so
@@ -44,6 +44,25 @@ apps:
     # always run in a single long-lived process
     daemon: simple
     # Use network and network-bind plugs to access the network and bind to 
+    # ports on network interfaces
+    plugs: [network, network-bind]
+  device-simple-cmd:
+    # This app allows the device service to be run from the command-line.
+    # `adapter` specifies what kind of environment variables need to be setup
+    # for the app; since device services now link to libzmq by default (i.e.
+    # this service uses cgo), we need to ensure that all of the standard
+    # enviornment variables are provided to this service by using 'full'.
+    adapter: full
+    command: bin/device-simple --registry $CONFIG_PRO_ARG $CONF_ARG
+    # Since we can't include the colon ':' characters in the command above,
+    # we need to specify the consul address in an env var like so
+    # see https://bugs.launchpad.net/snapd/+bug/1827392 for more details
+    environment:
+      CONFIG_PRO_ARG: "--cp=consul.http://localhost:8500"
+      CONF_ARG: "--confdir=$SNAP_DATA/config/device-simple/res"
+      DEVICE_DEVICESDIR: "$SNAP_DATA/config/device-simple/res/devices"
+      DEVICE_PROFILESDIR: "$SNAP_DATA/config/device-simple/res/profiles"
+    # Use network and network-bind plugs to access the network and bind to
     # ports on network interfaces
     plugs: [network, network-bind]
 
